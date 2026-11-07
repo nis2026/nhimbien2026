@@ -3,7 +3,7 @@ import { isSupabaseConfigured, getSupabaseBrowserClient } from "./client";
 
 /**
  * All cloud reads/writes are best-effort: if the migration in
- * supabase/migrations/0001_nhim_bien_schema.sql hasn't been run yet, or the
+ * supabase/migrations/0001_miu_schema.sql hasn't been run yet, or the
  * network hiccups, we log and continue — the app must keep working from the
  * local `localStorage` cache in `@/lib/storage` either way.
  */
@@ -15,7 +15,7 @@ export async function fetchCloudProfile(userId: string): Promise<Profile | null>
   if (!isSupabaseConfigured()) return null;
   try {
     const supabase = getSupabaseBrowserClient();
-    const { data, error } = await supabase.from("nhim_bien_profiles").select("*").eq("id", userId).maybeSingle();
+    const { data, error } = await supabase.from("miu_profiles").select("*").eq("id", userId).maybeSingle();
     if (error) throw error;
     if (!data) return null;
     return {
@@ -42,7 +42,7 @@ export async function fetchAllCloudProfiles(): Promise<Profile[] | null> {
   try {
     const supabase = getSupabaseBrowserClient();
     const { data, error } = await supabase
-      .from("nhim_bien_profiles")
+      .from("miu_profiles")
       .select("*")
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -68,7 +68,7 @@ export async function pushCloudProfile(profile: Profile): Promise<void> {
   if (!isSupabaseConfigured()) return;
   try {
     const supabase = getSupabaseBrowserClient();
-    const { error } = await supabase.from("nhim_bien_profiles").upsert({
+    const { error } = await supabase.from("miu_profiles").upsert({
       id: profile.id,
       name: profile.name,
       avatar: profile.avatar,
@@ -85,7 +85,7 @@ export async function pushCloudProfileRole(profileId: string, role: Role): Promi
   if (!isSupabaseConfigured()) return;
   try {
     const supabase = getSupabaseBrowserClient();
-    const { error } = await supabase.from("nhim_bien_profiles").update({ role }).eq("id", profileId);
+    const { error } = await supabase.from("miu_profiles").update({ role }).eq("id", profileId);
     if (error) throw error;
   } catch (e) {
     logSyncError("pushCloudProfileRole", e);
@@ -98,7 +98,7 @@ export async function fetchCloudUnitProgress(
   if (!isSupabaseConfigured()) return {};
   try {
     const supabase = getSupabaseBrowserClient();
-    const { data, error } = await supabase.from("nhim_bien_unit_progress").select("*").eq("user_id", userId);
+    const { data, error } = await supabase.from("miu_unit_progress").select("*").eq("user_id", userId);
     if (error) throw error;
     const result: Record<string, UnitProgress> = {};
     for (const row of data ?? []) {
@@ -128,7 +128,7 @@ export async function pushCloudUnitProgress(
   if (!isSupabaseConfigured()) return;
   try {
     const supabase = getSupabaseBrowserClient();
-    const { error } = await supabase.from("nhim_bien_unit_progress").upsert({
+    const { error } = await supabase.from("miu_unit_progress").upsert({
       user_id: userId,
       unit_slug: unitSlug,
       vocab_viewed_count: progress.vocabViewedCount,
@@ -153,7 +153,7 @@ export async function fetchCloudVocabProgress(
   if (!isSupabaseConfigured()) return {};
   try {
     const supabase = getSupabaseBrowserClient();
-    const { data, error } = await supabase.from("nhim_bien_vocab_progress").select("*").eq("user_id", userId);
+    const { data, error } = await supabase.from("miu_vocab_progress").select("*").eq("user_id", userId);
     if (error) throw error;
     const result: Record<string, VocabProgress> = {};
     for (const row of data ?? []) {
@@ -181,7 +181,7 @@ export async function pushCloudVocabProgress(
   if (!isSupabaseConfigured()) return;
   try {
     const supabase = getSupabaseBrowserClient();
-    const { error } = await supabase.from("nhim_bien_vocab_progress").upsert({
+    const { error } = await supabase.from("miu_vocab_progress").upsert({
       user_id: userId,
       unit_slug: unitSlug,
       word_no: wordNo,
@@ -206,7 +206,7 @@ export async function fetchCloudUnitLocks(): Promise<Record<string, boolean> | n
   if (!isSupabaseConfigured()) return null;
   try {
     const supabase = getSupabaseBrowserClient();
-    const { data, error } = await supabase.from("nhim_bien_unit_locks").select("*");
+    const { data, error } = await supabase.from("miu_unit_locks").select("*");
     if (error) throw error;
     const result: Record<string, boolean> = {};
     for (const row of data ?? []) result[row.unit_slug] = row.unlocked;
@@ -243,7 +243,7 @@ export async function pushCloudUnitLocks(slugs: string[], unlocked: boolean): Pr
     const rows = slugs.map((slug) => ({ unit_slug: slug, unlocked, updated_at: now }));
     // .select() makes PostgREST return the written rows: if RLS silently filtered
     // the write out we get back fewer rows than we sent instead of a false success.
-    const { data, error } = await supabase.from("nhim_bien_unit_locks").upsert(rows).select("unit_slug");
+    const { data, error } = await supabase.from("miu_unit_locks").upsert(rows).select("unit_slug");
     if (error) throw error;
     if ((data ?? []).length !== rows.length) {
       throw new Error("Máy chủ không ghi nhận thay đổi (tài khoản chưa có quyền admin trên Supabase).");
@@ -258,15 +258,15 @@ export async function pushCloudUnitLocks(slugs: string[], unlocked: boolean): Pr
 /**
  * Fires `onChange` whenever any row of the class-wide lock table changes, so a
  * student's open tab picks up an admin's unlock within about a second. Needs
- * `nhim_bien_unit_locks` in the supabase_realtime publication (migration 0004);
+ * `miu_unit_locks` in the supabase_realtime publication (migration 0004);
  * callers also poll as a fallback for networks that block websockets.
  */
 export function subscribeCloudUnitLocks(onChange: () => void): () => void {
   if (!isSupabaseConfigured()) return () => {};
   const supabase = getSupabaseBrowserClient();
   const channel = supabase
-    .channel(`nhim-bien-unit-locks-${Math.random().toString(36).slice(2)}`)
-    .on("postgres_changes", { event: "*", schema: "public", table: "nhim_bien_unit_locks" }, () => onChange())
+    .channel(`miu-unit-locks-${Math.random().toString(36).slice(2)}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "miu_unit_locks" }, () => onChange())
     .subscribe();
   return () => {
     supabase.removeChannel(channel);

@@ -97,7 +97,7 @@ function GoogleLoginPanel() {
 
   const [checking, setChecking] = useState(true);
   const [googleProfile, setGoogleProfile] = useState<GoogleProfile | null>(null);
-  const [avatar, setAvatar] = useState<Profile["avatar"]>("ms-nhim-bien");
+  const [avatar, setAvatar] = useState<Profile["avatar"]>("ms-miu");
   const [submitting, setSubmitting] = useState(false);
   const errorParam = searchParams.get("error");
   const kicked = searchParams.get("kicked") === "1";
@@ -190,7 +190,7 @@ function GoogleLoginPanel() {
               <p className="text-[10px] sm:text-xs text-caramel mt-1">Chọn nhân vật đồng hành cho bạn</p>
             </div>
             <div className="flex justify-center gap-3 sm:gap-4">
-              {(["ms-nhim-bien", "mr-leo"] as const).map((a) => (
+              {(["ms-miu", "mr-leo"] as const).map((a) => (
                 <button
                   key={a}
                   onClick={() => setAvatar(a)}
@@ -245,7 +245,7 @@ function DemoLoginPanel() {
     useAppStore();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [avatar, setAvatar] = useState<Profile["avatar"]>("ms-nhim-bien");
+  const [avatar, setAvatar] = useState<Profile["avatar"]>("ms-miu");
   const [showForm, setShowForm] = useState(false);
   const [editingEmailId, setEditingEmailId] = useState<string | null>(null);
   const [editingEmailValue, setEditingEmailValue] = useState("");
@@ -385,7 +385,7 @@ function DemoLoginPanel() {
                 <div>
                   <label className="text-sm font-semibold text-brown block mb-2">Chọn avatar</label>
                   <div className="flex gap-3">
-                    {(["ms-nhim-bien", "mr-leo"] as const).map((a) => (
+                    {(["ms-miu", "mr-leo"] as const).map((a) => (
                       <button
                         key={a}
                         onClick={() => setAvatar(a)}

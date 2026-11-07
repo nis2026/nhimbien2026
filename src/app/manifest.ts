@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "VIP Coach Ms. Nhím Biển",
-    short_name: "VIP Coach Nhím Biển",
+    short_name: "Ms. Nhím Biển",
     description: "Giao tiếp tiếng Anh kèm 1-1 cùng Mr. Leo — Khóa Starter, 25 bài, từ vựng, hội thoại, game ôn tập.",
     start_url: "/dashboard",
     display: "standalone",

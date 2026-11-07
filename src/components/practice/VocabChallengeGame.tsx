@@ -182,7 +182,7 @@ function makeReducer(words: Map<number, VocabWord>) {
 }
 
 function bestKey(profileId: string, unitSlug: string) {
-  return `vip_nhim_bien_challenge_best_${profileId}_${unitSlug}`;
+  return `vip_nhimbien_challenge_best_${profileId}_${unitSlug}`;
 }
 
 function readBest(profileId: string, unitSlug: string): number {

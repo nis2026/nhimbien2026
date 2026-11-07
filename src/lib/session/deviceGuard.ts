@@ -14,22 +14,22 @@ export function clearDsIdCookie() {
 }
 
 // Watches for this account logging in on another device. The server rotates
-// nhim_bien_active_sessions.device_session_id on every login (see
+// miu_active_sessions.device_session_id on every login (see
 // auth/callback/route.ts); once this device's cookie no longer matches that
 // row, it has been replaced. Realtime gives an (almost) instant kick; the 45s
 // poll against a proxy-guarded endpoint is the fallback if the realtime
 // socket never connects (some networks block websockets, or the
 // "alter publication supabase_realtime add table ..." line in
-// supabase/migrations/0001_nhim_bien_schema.sql hasn't been run).
+// supabase/migrations/0001_miu_schema.sql hasn't been run).
 export function startDeviceGuard(userId: string, onKicked: () => void): () => void {
   const supabase = getSupabaseBrowserClient();
   const localDsId = readDsIdCookie();
 
   const channel = supabase
-    .channel(`nhim-bien-active-session-${userId}`)
+    .channel(`miu-active-session-${userId}`)
     .on(
       "postgres_changes",
-      { event: "UPDATE", schema: "public", table: "nhim_bien_active_sessions", filter: `user_id=eq.${userId}` },
+      { event: "UPDATE", schema: "public", table: "miu_active_sessions", filter: `user_id=eq.${userId}` },
       (payload: { new: { device_session_id?: string } }) => {
         const newId = payload.new.device_session_id;
         if (newId && newId !== localDsId) onKicked();

@@ -4,7 +4,7 @@ import { isAdminEmail } from "@/lib/adminConfig";
 
 // Runs on every request (except static assets — see the matcher below).
 // Single active-device enforcement: each Google login overwrites the user's
-// one row in nhim_bien_active_sessions with a fresh device id (see
+// one row in miu_active_sessions with a fresh device id (see
 // src/app/auth/callback/route.ts). If the "ds_id" cookie on THIS request no
 // longer matches that row, this device has been replaced by a newer login
 // elsewhere — sign it out immediately, even on API calls, so a device that
@@ -40,7 +40,7 @@ export async function proxy(req: NextRequest) {
 
   const dsId = req.cookies.get("ds_id")?.value ?? null;
   const { data: activeSession } = await supabase
-    .from("nhim_bien_active_sessions")
+    .from("miu_active_sessions")
     .select("device_session_id")
     .eq("user_id", user.id)
     .maybeSingle();

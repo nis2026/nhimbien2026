@@ -12,11 +12,11 @@ import {
   pushCloudUnitLocks,
 } from "./supabase/sync";
 
-const PROFILES_KEY = "vip_nhim_bien_profiles";
-const CURRENT_PROFILE_KEY = "vip_nhim_bien_current_profile";
-const UNIT_LOCKS_KEY = "vip_nhim_bien_unit_locks";
-const SELECTED_COURSE_KEY = "vip_nhim_bien_selected_course";
-const progressKey = (profileId: string) => `vip_nhim_bien_progress_${profileId}`;
+const PROFILES_KEY = "vip_nhimbien_profiles";
+const CURRENT_PROFILE_KEY = "vip_nhimbien_current_profile";
+const UNIT_LOCKS_KEY = "vip_nhimbien_unit_locks";
+const SELECTED_COURSE_KEY = "vip_nhimbien_selected_course";
+const progressKey = (profileId: string) => `vip_nhimbien_progress_${profileId}`;
 
 /** Bài học đầu tiên mở khóa ngay; các bài còn lại chờ admin mở khóa dần theo buổi học. */
 const DEFAULT_UNLOCKED_SLUGS = ["unit-01"];
@@ -330,7 +330,7 @@ export function getStarredWords(profileId: string): string[] {
 
 /**
  * Khóa/mở bài học là cài đặt chung của cả lớp — được lưu trên bảng
- * `nhim_bien_unit_locks` (đọc công khai, chỉ admin ghi được) nên đồng bộ thật giữa
+ * `miu_unit_locks` (đọc công khai, chỉ admin ghi được) nên đồng bộ thật giữa
  * mọi thiết bị/trình duyệt, không còn là "giả lập theo trình duyệt" như trước.
  * localStorage vẫn giữ vai trò cache để hiển thị ngay lập tức trước khi kịp
  * pull từ cloud (xem `pullUnitLocksFromCloud`).

@@ -62,7 +62,7 @@ export type Role = "admin" | "student";
 export type Profile = {
   id: string;
   name: string;
-  avatar: "mr-leo" | "ms-nhim-bien";
+  avatar: "mr-leo" | "ms-miu" | "ms-nhim-bien";
   email?: string;
   role: Role;
   createdAt: string;

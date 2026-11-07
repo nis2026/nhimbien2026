@@ -7,11 +7,11 @@ import { isAdminEmail } from "@/lib/adminConfig";
 // Overwrites the user's single active-session row with a brand new device id.
 // Whichever device held the old id gets kicked out by proxy.ts on its next request.
 // Writes with the user's OWN just-exchanged session (RLS lets a user upsert
-// only their own row — see supabase/migrations/0001_nhim_bien_schema.sql),
+// only their own row — see supabase/migrations/0001_miu_schema.sql),
 // so no service-role key is needed for this feature.
 async function rotateActiveSession(supabase: SupabaseClient, userId: string, userAgent: string | null): Promise<string> {
   const deviceSessionId = crypto.randomUUID();
-  const { error } = await supabase.from("nhim_bien_active_sessions").upsert(
+  const { error } = await supabase.from("miu_active_sessions").upsert(
     { user_id: userId, device_session_id: deviceSessionId, user_agent: userAgent, updated_at: new Date().toISOString() },
     { onConflict: "user_id" }
   );
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
         maxAge: 60 * 60 * 24 * 30,
       });
     } catch {
-      // Table/policies not migrated yet (supabase/migrations/0001_nhim_bien_schema.sql)
+      // Table/policies not migrated yet (supabase/migrations/0001_miu_schema.sql)
       // — don't block sign-in over it, just skip single-device enforcement for this session.
     }
   }
