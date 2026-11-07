@@ -15,7 +15,7 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700", "800"],
 });
 
-const APP_URL = "https://vip-coach-nhim-bien.vercel.app";
+const APP_URL = "https://nhimbien2026.vercel.app";
 const APP_TITLE = "VIP Coach Ms. Nhím Biển";
 const APP_DESCRIPTION =
   "Học từ vựng và hội thoại tiếng Anh giao tiếp — Khóa Starter 25 bài kèm 1-1 cùng Mr. Leo, game ôn từ, theo dõi tiến độ.";

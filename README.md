@@ -18,7 +18,7 @@ Next.js (App Router) + TypeScript + Tailwind CSS + Zustand + Supabase (đăng nh
 
 Dùng chung project `dncwwxqzpiobooqvlurc` với Mickey / Wendy / IELTS — mọi bảng có tiền tố `nhim_bien_`.
 Chạy **một lần** [`supabase/migrations/0001_nhim_bien_schema.sql`](supabase/migrations/0001_nhim_bien_schema.sql) và [`supabase/migrations/0002_admin_read_profiles.sql`](supabase/migrations/0002_admin_read_profiles.sql) trong SQL Editor,
-và thêm `https://vip-coach-nhim-bien.vercel.app/auth/callback` vào Auth → URL Configuration → Redirect URLs.
+và thêm `https://nhimbien2026.vercel.app/auth/callback` vào Auth → URL Configuration → Redirect URLs.
 
 ## Chạy dự án
 
