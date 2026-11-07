@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit 11 Shopping and Asking for Prices - Flash Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#dff1ff; --bg2:#fff1d6;
+  --ink:#22304a; --muted:#6b7a99;
+  --card:#ffffff; --line:#d9e3f5;
+  --pri:#4f6bff; --pri-d:#3a52d6;
+  --good:#22b86a; --good-bg:#e3f9ee;
+  --bad:#f0504f; --bad-bg:#ffe8e8;
+  --gold:#ffb300; --pink:#ff5fa2; --teal:#12b5b0;
+  --shadow:0 10px 30px rgba(40,60,120,.14);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:'Nunito','Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+  color:var(--ink);
+  background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;
+  min-height:100vh;
+}
+button{font-family:inherit;cursor:pointer;border:0;color:inherit}
+button:focus-visible{outline:4px solid #ffd54a;outline-offset:2px}
+
+/* ---------- top bar ---------- */
+.top{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 16px;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);
+  box-shadow:0 2px 14px rgba(40,60,120,.12);
+}
+.brand{font-weight:900;font-size:1.15rem;flex:1;min-width:150px;color:var(--pri-d)}
+.brand small{display:block;font-weight:700;color:var(--muted);font-size:.78rem}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tool{
+  padding:10px 16px;border-radius:999px;font-weight:900;font-size:1rem;color:#fff;
+  box-shadow:0 4px 0 rgba(0,0,0,.16);transition:transform .1s;
+}
+.tool:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.16)}
+.tool.home{background:var(--pri)}
+.tool.clap{background:linear-gradient(135deg,#ffb300,#ff8a00)}
+.tool.cele{background:linear-gradient(135deg,#ff5fa2,#a25bff)}
+.tool.mute{background:#7a8bb0;padding:10px 14px}
+
+main{max-width:980px;margin:0 auto;padding:18px 16px 60px}
+h1,h2,h3{margin:0}
+
+/* ---------- menu ---------- */
+.hero{text-align:center;margin:10px 0 22px}
+.hero h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:900;line-height:1.1}
+.hero h1 span{color:var(--pri)}
+.hero p{margin:8px 0 0;color:var(--muted);font-weight:700;font-size:1.1rem}
+.emoji-row{font-size:clamp(1.8rem,5vw,2.8rem);letter-spacing:6px;margin-bottom:6px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.tile{
+  background:var(--card);border-radius:26px;padding:20px 20px 18px;text-align:left;
+  box-shadow:var(--shadow);border-bottom:8px solid var(--c,var(--pri));
+  transition:transform .15s;display:flex;gap:14px;align-items:center;
+}
+.tile:hover{transform:translateY(-4px) rotate(-.6deg)}
+.tile .ic{font-size:2.8rem;width:70px;height:70px;border-radius:20px;display:grid;place-items:center;
+  background:color-mix(in srgb,var(--c) 16%,white);flex:none}
+.tile b{display:block;font-size:1.3rem;font-weight:900}
+.tile span{display:block;color:var(--muted);font-weight:700;font-size:.95rem;margin-top:2px}
+.tile em{display:inline-block;margin-top:6px;font-style:normal;font-weight:900;font-size:.85rem;
+  background:#fff6d6;color:#b07800;padding:2px 10px;border-radius:999px}
+
+/* ---------- study ---------- */
+.study-wrap{display:flex;flex-direction:column;align-items:center;gap:16px}
+.progress{width:min(100%,640px);height:12px;border-radius:99px;background:#fff;box-shadow:inset 0 2px 4px rgba(0,0,0,.1);overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4f6bff,#12b5b0);border-radius:99px;transition:width .3s}
+.scene{perspective:1400px;width:min(94vw,640px);height:min(66vh,500px);min-height:380px}
+.flip{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,.2,.2,1);cursor:pointer}
+.flip.is-back{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:34px;background:var(--card);box-shadow:var(--shadow);
+  border:8px solid hsl(var(--h) 80% 62%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px;text-align:center;
+}
+.face.front{background:linear-gradient(180deg,#fff,hsl(var(--h) 100% 96%))}
+.face.back{transform:rotateY(180deg);background:linear-gradient(180deg,#fff,hsl(var(--h) 100% 95%));gap:6px}
+.big-emoji{font-size:clamp(5rem,16vw,8.5rem);line-height:1;filter:drop-shadow(0 6px 6px rgba(0,0,0,.12))}
+.word{font-size:clamp(2.4rem,9vw,4rem);font-weight:900;line-height:1.05;color:hsl(var(--h) 60% 30%)}
+.ipa{font-size:clamp(1.3rem,4.5vw,2rem);font-weight:700;color:var(--muted);font-family:'Segoe UI','Nunito',Arial,sans-serif}
+.word.long{font-size:clamp(2rem,7vw,3.2rem)!important}
+.vi.long{font-size:clamp(1.7rem,5.5vw,2.5rem)}
+.q-vi.long{font-size:clamp(1.7rem,5.5vw,2.6rem)}
+.hint{font-size:.95rem;font-weight:800;color:var(--muted);margin-top:4px}
+.chip{display:inline-block;padding:3px 14px;border-radius:99px;font-weight:900;font-size:.9rem;background:hsl(var(--h) 85% 88%);color:hsl(var(--h) 60% 28%)}
+.vi{font-size:clamp(2.2rem,8vw,3.6rem);font-weight:900;color:hsl(var(--h) 60% 30%);line-height:1.1}
+.sent{background:#fff;border:3px dashed hsl(var(--h) 70% 75%);border-radius:20px;padding:12px 16px;width:100%;margin-top:6px}
+.sent .en{font-size:clamp(1.15rem,3.8vw,1.6rem);font-weight:800}
+.sent .vn{font-size:clamp(.95rem,3vw,1.15rem);color:var(--muted);font-weight:700;margin-top:2px}
+.sbtns{display:flex;gap:8px;justify-content:center;margin-top:8px}
+
+.spk{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border-radius:999px;font-weight:900;font-size:1.05rem;padding:10px 20px;color:#fff;
+  background:var(--pri);box-shadow:0 5px 0 var(--pri-d);transition:transform .08s;
+}
+.spk:active{transform:translateY(4px);box-shadow:0 1px 0 var(--pri-d)}
+.spk.big{font-size:1.4rem;padding:14px 28px}
+.spk.slow{background:var(--teal);box-shadow:0 5px 0 #0c8a86}
+.spk.sm{font-size:.95rem;padding:7px 14px;box-shadow:0 4px 0 var(--pri-d)}
+.spk.slow.sm{box-shadow:0 4px 0 #0c8a86}
+.spk.playing{animation:pulse .6s infinite alternate}
+@keyframes pulse{to{transform:scale(1.08)}}
+
+.nav{display:flex;align-items:center;gap:14px}
+.nav .arrow{width:68px;height:68px;border-radius:50%;font-size:1.8rem;font-weight:900;color:#fff;background:var(--pink);box-shadow:0 6px 0 #c53a79}
+.nav .arrow:active{transform:translateY(5px);box-shadow:0 1px 0 #c53a79}
+.nav .count{font-weight:900;font-size:1.4rem;min-width:90px;text-align:center}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn{padding:12px 22px;border-radius:999px;font-weight:900;font-size:1.05rem;background:#fff;box-shadow:0 4px 0 #cfd8ee;color:var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #cfd8ee}
+.btn.pri{background:var(--pri);color:#fff;box-shadow:0 5px 0 var(--pri-d)}
+.btn.good{background:var(--good);color:#fff;box-shadow:0 5px 0 #168a4f}
+
+/* ---------- game ---------- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat{background:#fff;border-radius:18px;padding:8px 10px;text-align:center;box-shadow:var(--shadow)}
+.stat small{display:block;color:var(--muted);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px}
+.stat b{font-size:1.7rem;font-weight:900}
+.stat.score b{color:var(--gold)}
+.stat.streak b{color:#ff6a1a}
+.qcard{background:var(--card);border-radius:30px;padding:22px 18px;box-shadow:var(--shadow);text-align:center;margin-top:14px}
+.qtype{display:inline-block;background:#eef1ff;color:var(--pri-d);font-weight:900;border-radius:99px;padding:4px 16px;font-size:.95rem;margin-bottom:10px}
+.qmain{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:150px;justify-content:center}
+.qmain .big-emoji{font-size:clamp(4rem,13vw,6.5rem)}
+.qmain .word{font-size:clamp(2.4rem,9vw,4.2rem)}
+.q-vi{font-size:clamp(2.2rem,8vw,3.8rem);font-weight:900;color:var(--pri-d)}
+.q-sentence{font-size:clamp(1.5rem,5vw,2.5rem);font-weight:900;line-height:1.35}
+.blank{display:inline-block;min-width:4.2ch;border-bottom:5px dashed var(--pri);color:var(--pri);padding:0 8px;margin:0 4px}
+.blank.filled{border-bottom-style:solid;color:var(--good)}
+.q-tr{color:var(--muted);font-weight:800;font-size:clamp(1rem,3.4vw,1.3rem)}
+.listen-btn{font-size:2.6rem;width:130px;height:130px;border-radius:50%;background:var(--pri);color:#fff;box-shadow:0 8px 0 var(--pri-d)}
+.listen-btn:active{transform:translateY(6px);box-shadow:0 2px 0 var(--pri-d)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.opt{
+  min-height:98px;border-radius:24px;background:#fff;border:4px solid var(--line);
+  font-weight:900;font-size:clamp(1.25rem,4.2vw,2rem);padding:10px 12px;
+  box-shadow:0 6px 0 var(--line);transition:transform .1s;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.15;
+}
+.opt .oe{font-size:clamp(2.2rem,7vw,3.2rem)}
+.opt .okey{position:absolute}
+.opt:hover:not(:disabled){transform:translateY(-3px);border-color:var(--pri)}
+.opt:disabled{cursor:default}
+.opt.correct{background:var(--good-bg);border-color:var(--good);box-shadow:0 6px 0 #168a4f;animation:pop .45s}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad);box-shadow:0 6px 0 #b72f2e;animation:shake .45s}
+.opt.dim{opacity:.45}
+@keyframes pop{40%{transform:scale(1.08)}}
+@keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+
+.fb{margin-top:16px;border-radius:26px;padding:16px 18px;text-align:left;animation:slide .35s;display:grid;gap:10px}
+.fb.ok{background:var(--good-bg);border:4px solid var(--good)}
+.fb.no{background:var(--bad-bg);border:4px solid var(--bad)}
+@keyframes slide{from{opacity:0;transform:translateY(14px)}}
+.fb h3{font-size:1.5rem;font-weight:900}
+.fb.ok h3{color:#168a4f}.fb.no h3{color:#c23130}
+.fb-word{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fb-word .e{font-size:2.6rem}
+.fb-word b{font-size:1.6rem;font-weight:900}
+.fb-sent .en{font-size:1.25rem;font-weight:800}
+.fb-sent .vn{color:var(--muted);font-weight:700}
+.fb-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* ---------- result ---------- */
+.res{background:var(--card);border-radius:34px;box-shadow:var(--shadow);padding:26px 18px;text-align:center}
+.trophy{font-size:6rem;line-height:1;animation:bounce 1.2s infinite alternate}
+@keyframes bounce{to{transform:translateY(-14px) rotate(4deg)}}
+.stars{font-size:3rem;letter-spacing:6px;margin:6px 0}
+.res h2{font-size:clamp(1.8rem,6vw,2.6rem);font-weight:900}
+.res .big-score{font-size:clamp(3.4rem,13vw,6rem);font-weight:900;color:var(--gold);line-height:1}
+.res p{font-weight:800;color:var(--muted);margin:6px 0}
+.newrec{display:inline-block;background:var(--gold);color:#fff;font-weight:900;border-radius:99px;padding:4px 16px;margin:6px 0;animation:pulse .6s infinite alternate}
+.missed{margin:16px auto 0;max-width:560px;text-align:left}
+.missed h3{font-size:1.15rem;margin-bottom:8px}
+.mi{display:flex;align-items:center;gap:10px;background:#f6f8ff;border-radius:16px;padding:8px 12px;margin-bottom:8px;font-weight:800}
+.mi .e{font-size:1.8rem}.mi .t{flex:1}.mi small{display:block;color:var(--muted);font-weight:700}
+
+/* ---------- overlays ---------- */
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+#banner{
+  position:fixed;inset:0;z-index:55;display:grid;place-items:center;pointer-events:none;
+}
+#banner > div{
+  text-align:center;padding:24px 34px;border-radius:36px;background:rgba(20,16,60,.72);
+  color:#fff;text-shadow:0 3px 14px rgba(0,0,0,.4);animation:banner 3.6s ease forwards;
+}
+#banner h2{font-size:clamp(2.2rem,9vw,5rem);font-weight:900;color:#ffe066}
+#banner p{margin:6px 0 0;font-size:clamp(1.2rem,4vw,2rem);font-weight:800}
+@keyframes banner{0%{opacity:0;transform:scale(.3) rotate(-6deg)}12%{opacity:1;transform:scale(1.08)}20%{transform:scale(1)}85%{opacity:1}100%{opacity:0;transform:scale(1.05)}}
+.floaty{position:fixed;bottom:-60px;font-size:3rem;z-index:54;pointer-events:none;animation:floaty 2.6s ease-out forwards}
+@keyframes floaty{to{transform:translateY(-105vh) rotate(var(--r));opacity:0}}
+#toast{
+  position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:60;
+  background:#22304a;color:#fff;font-weight:900;padding:10px 22px;border-radius:99px;
+  box-shadow:var(--shadow);animation:toast 2.2s ease forwards;
+}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-14px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+
+@media(max-width:560px){
+  .opts{gap:10px}
+  .opt{min-height:88px}
+  .tool{padding:9px 12px;font-size:.9rem}
+  .brand{min-width:100%;order:-1}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">Unit 11 · Shopping and Asking for Prices <small>Flash Card Game</small></div>
+  <div class="tools">
+    <button class="tool home" id="homeBtn">🏠 Menu</button>
+    <button class="tool clap" id="clapBtn">👏 Clap</button>
+    <button class="tool cele" id="celeBtn">🎉 Congratulations</button>
+    <button class="tool mute" id="muteBtn" title="Sound effects on/off">🔊</button>
+  </div>
+</header>
+
+<main>
+  <!-- MENU -->
+  <section id="menu">
+    <div class="hero">
+      <div class="emoji-row">🏪 🛒 🏷️ 💲 💎 🪙 💰 💵 💳 🔖</div>
+      <h1>Remember the <span>Shopping Words</span></h1>
+      <p>Pick a game to start · 20 words &amp; phrases · Tap 🔊 to hear the pronunciation</p>
+    </div>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <!-- STUDY -->
+  <section id="study" hidden>
+    <div class="study-wrap">
+      <div class="progress"><i id="stProg"></i></div>
+      <div class="scene">
+        <div class="flip" id="flip" role="button" tabindex="0" aria-label="Flip card">
+          <div class="face front" id="faceF"></div>
+          <div class="face back" id="faceB"></div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="arrow" id="prevBtn" aria-label="Previous card">◀</button>
+        <div class="count" id="stCount"></div>
+        <button class="arrow" id="nextBtn" aria-label="Next card">▶</button>
+      </div>
+      <div class="row">
+        <button class="btn pri" id="flipBtn">🔄 Flip card</button>
+        <button class="btn" id="shufBtn">🔀 Shuffle</button>
+        <button class="btn good" id="toGameBtn">🎮 Play game</button>
+      </div>
+      <div class="hint">Shortcuts: ← → change card · Space flip card</div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" hidden>
+    <div class="stats">
+      <div class="stat score"><small>Score</small><b id="gScore">0</b></div>
+      <div class="stat streak"><small>Streak</small><b id="gStreak">0 🔥</b></div>
+      <div class="stat"><small>Question</small><b id="gNum">1/20</b></div>
+    </div>
+    <div class="progress" style="width:100%"><i id="gProg"></i></div>
+    <div class="qcard">
+      <div class="qtype" id="qType"></div>
+      <div class="qmain" id="qMain"></div>
+    </div>
+    <div class="opts" id="opts"></div>
+    <div id="fbBox"></div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" hidden>
+    <div class="res" id="resBox"></div>
+  </section>
+</main>
+
+<canvas id="fx"></canvas>
+<div id="banner" hidden></div>
+
+<script>
+'use strict';
+/* =====================================================
+   DỮ LIỆU TỪ VỰNG (Unit 11 – Part 1, 4)
+   ===================================================== */
+const WORDS = [
+ {"id": 0, "en": "Shop", "ipa": "/ʃɒp/", "vi": "cửa hàng", "tag": "Noun", "emoji": "🏪", "h": 143, "sEn": "I go to the shop to buy food.", "sVi": "Tôi đến cửa hàng để mua đồ ăn.", "blank": "shop", "fill": true},
+ {"id": 1, "en": "Buy", "ipa": "/baɪ/", "vi": "mua", "tag": "Verb", "emoji": "🛒", "h": 180, "sEn": "She wants to buy a new dress.", "sVi": "Cô ấy muốn mua một chiếc váy mới.", "blank": "buy", "fill": true},
+ {"id": 2, "en": "Sell", "ipa": "/sel/", "vi": "bán", "tag": "Verb", "emoji": "🏷️", "h": 217, "sEn": "They sell fruits at the market.", "sVi": "Họ bán trái cây ở chợ.", "blank": "sell", "fill": true},
+ {"id": 3, "en": "Price", "ipa": "/praɪs/", "vi": "giá", "tag": "Noun", "emoji": "💲", "h": 254, "sEn": "The price of this shirt is high.", "sVi": "Giá của cái áo này cao.", "blank": "price", "fill": true},
+ {"id": 4, "en": "Expensive", "ipa": "/ɪkˈspen.sɪv/", "vi": "đắt", "tag": "Adjective", "emoji": "💎", "h": 291, "sEn": "This watch is too expensive for me.", "sVi": "Cái đồng hồ này quá đắt đối với tôi.", "blank": "expensive", "fill": true},
+ {"id": 5, "en": "Cheap", "ipa": "/tʃiːp/", "vi": "rẻ", "tag": "Adjective", "emoji": "🪙", "h": 328, "sEn": "These socks are very cheap.", "sVi": "Đôi tất này rất rẻ.", "blank": "cheap", "fill": true},
+ {"id": 6, "en": "Money", "ipa": "/ˈmʌn.i/", "vi": "tiền", "tag": "Noun", "emoji": "💰", "h": 5, "sEn": "I need money to buy a phone.", "sVi": "Tôi cần tiền để mua điện thoại.", "blank": "money", "fill": true},
+ {"id": 7, "en": "Cash", "ipa": "/kæʃ/", "vi": "tiền mặt", "tag": "Noun", "emoji": "💵", "h": 42, "sEn": "He pays with cash at the store.", "sVi": "Anh ấy trả bằng tiền mặt ở cửa hàng.", "blank": "cash", "fill": true},
+ {"id": 8, "en": "Credit card", "ipa": "/ˈkred.ɪt kɑːrd/", "vi": "thẻ tín dụng", "tag": "Noun", "emoji": "💳", "h": 79, "sEn": "I use a credit card to buy online.", "sVi": "Tôi dùng thẻ tín dụng để mua hàng online.", "blank": "credit card", "fill": true},
+ {"id": 9, "en": "Discount", "ipa": "/ˈdɪs.kaʊnt/", "vi": "giảm giá", "tag": "Noun", "emoji": "🔖", "h": 116, "sEn": "The store has a big discount today.", "sVi": "Cửa hàng có giảm giá lớn hôm nay.", "blank": "discount", "fill": true},
+ {"id": 10, "en": "Store", "ipa": "/stɔːr/", "vi": "cửa hàng", "tag": "Noun", "emoji": "🏬", "h": 153, "sEn": "This store sells nice clothes.", "sVi": "Cửa hàng này bán quần áo đẹp.", "blank": "store", "fill": true},
+ {"id": 11, "en": "Market", "ipa": "/ˈmɑːr.kɪt/", "vi": "chợ", "tag": "Noun", "emoji": "🧺", "h": 190, "sEn": "I buy vegetables at the market.", "sVi": "Tôi mua rau củ ở chợ.", "blank": "market", "fill": true},
+ {"id": 12, "en": "Clothes", "ipa": "/kloʊðz/", "vi": "quần áo", "tag": "Noun", "emoji": "👕", "h": 227, "sEn": "She likes to wear new clothes.", "sVi": "Cô ấy thích mặc quần áo mới.", "blank": "clothes", "fill": true},
+ {"id": 13, "en": "Shoes", "ipa": "/ʃuːz/", "vi": "giày", "tag": "Noun", "emoji": "👟", "h": 264, "sEn": "My shoes are old and dirty.", "sVi": "Giày của tôi cũ và bẩn.", "blank": "shoes", "fill": true},
+ {"id": 14, "en": "Bag", "ipa": "/bæɡ/", "vi": "túi", "tag": "Noun", "emoji": "👜", "h": 301, "sEn": "I carry my books in a bag.", "sVi": "Tôi mang sách trong một cái túi.", "blank": "bag", "fill": true},
+ {"id": 15, "en": "Pay", "ipa": "/peɪ/", "vi": "trả tiền", "tag": "Verb", "emoji": "🤑", "h": 338, "sEn": "We pay for our food at the counter.", "sVi": "Chúng tôi trả tiền cho đồ ăn ở quầy.", "blank": "pay", "fill": true},
+ {"id": 16, "en": "Receipt", "ipa": "/rɪˈsiːt/", "vi": "hóa đơn", "tag": "Noun", "emoji": "🧾", "h": 15, "sEn": "Keep the receipt after shopping.", "sVi": "Giữ hóa đơn sau khi mua sắm.", "blank": "receipt", "fill": true},
+ {"id": 17, "en": "Score a deal", "ipa": "/skɔːr ə diːl/", "vi": "mua được giá hời", "tag": "Slang", "emoji": "🎯", "h": 52, "sEn": "I score a deal on this jacket!", "sVi": "Tôi mua được giá hời với cái áo khoác này!", "blank": "score a deal", "fill": true},
+ {"id": 18, "en": "Shop till you drop", "ipa": "/ʃɒp tɪl juː drɒp/", "vi": "mua sắm đến kiệt sức", "tag": "Idiom", "emoji": "🛍️", "h": 89, "sEn": "She loves to shop till you drop on weekends.", "sVi": "Cô ấy thích mua sắm đến kiệt sức vào cuối tuần.", "blank": "shop till you drop", "fill": true},
+ {"id": 19, "en": "Break the bank", "ipa": "/breɪk ðə bæŋk/", "vi": "tốn rất nhiều tiền", "tag": "Idiom", "emoji": "🏦", "h": 126, "sEn": "This phone won’t break the bank.", "sVi": "Cái điện thoại này không tốn quá nhiều tiền.", "blank": "break the bank", "fill": true}
+];
+
+const MODES = {
+  study:  {ic:'📖', name:'Flashcards',         desc:'Big flip cards – hear every word and sentence', c:'#4f6bff'},
+  listen: {ic:'👂', name:'Listen & Choose',     desc:'Hear the word, then pick the right picture',          c:'#12b5b0'},
+  en2vi:  {ic:'🔤', name:'Word → Meaning',      desc:'See the English word, pick its meaning',    c:'#ff8a00'},
+  vi2en:  {ic:'💭', name:'Meaning → Word',      desc:'See the meaning, pick the English word',    c:'#ff5fa2'},
+  fill:   {ic:'✏️', name:'Fill in the Blank',   desc:'Choose the missing word in the sentence',           c:'#a25bff'},
+  mix:    {ic:'🎲', name:'Mix Challenge',       desc:'All question types together – test yourself!',   c:'#22b86a'}
+};
+const QTYPES = ['listen','en2vi','vi2en','fill'];
+const QLABEL = {
+  listen:'👂 Listen and choose the correct answer',
+  en2vi:'🔤 Choose the correct meaning',
+  vi2en:'💭 Choose the correct English word',
+  fill:'✏️ Choose the word to fill the blank'
+};
+
+/* =====================================================
+   TIỆN ÍCH
+   ===================================================== */
+const $ = id => document.getElementById(id);
+const rnd = n => Math.floor(Math.random()*n);
+const rand = (a,b) => a + Math.random()*(b-a);
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];} return a; };
+const baseVi = s => s.replace(/\s*\(.*\)/,'').trim();
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+};
+function toast(msg){
+  const old = $('toast'); if(old) old.remove();
+  const t = document.createElement('div'); t.id='toast'; t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>{ if(t.parentNode) t.remove(); }, 2300);
+}
+
+/* =====================================================
+   ÂM THANH (Web Audio – không cần file ngoài)
+   ===================================================== */
+let AC=null, master=null, noiseBuf=null, soundOn = store.get('u11_sound')!=='off';
+function ac(){
+  if(!AC){
+    const C = window.AudioContext||window.webkitAudioContext;
+    if(!C) return null;
+    AC = new C(); master = AC.createGain(); master.gain.value=.9; master.connect(AC.destination);
+  }
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+function tone(freq,t0,dur,type='sine',vol=.25,slideTo){
+  if(!soundOn) return; const a=ac(); if(!a) return;
+  const o=a.createOscillator(), g=a.createGain(), t=a.currentTime+t0;
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+.02);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+.05);
+}
+function getNoise(a){
+  if(!noiseBuf){
+    noiseBuf = a.createBuffer(1,a.sampleRate*2,a.sampleRate);
+    const d = noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  }
+  return noiseBuf;
+}
+function noiseHit(t0,dur,vol,type,freq,q){
+  const a=ac(); if(!a) return;
+  const s=a.createBufferSource(); s.buffer=getNoise(a);
+  const f=a.createBiquadFilter(); f.type=type; f.frequency.value=freq; f.Q.value=q||.8;
+  const g=a.createGain(), t=a.currentTime+t0;
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+.004);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(f); f.connect(g); g.connect(master);
+  s.start(t, Math.random()*1.5); s.stop(t+dur+.05);
+}
+function sfxCorrect(){ [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,i*.085,.28,'triangle',.28)); tone(1568,.34,.35,'sine',.12); }
+function sfxWrong(){ tone(260,0,.28,'sawtooth',.16,150); tone(190,.2,.35,'sawtooth',.16,110); }
+function sfxClick(){ tone(660,0,.06,'square',.06); }
+function sfxFanfare(){
+  const n=[[523.25,0],[523.25,.14],[523.25,.28],[698.46,.42],[880,.9],[783.99,1.04],[880,1.18],[1046.5,1.32]];
+  n.forEach(([f,t],i)=>{ const d = i===3||i===7?.55:.16; tone(f,t,d,'square',.11); tone(f/2,t,d,'triangle',.14); });
+}
+function sfxPop(){ noiseHit(0,.35,.22,'lowpass',500,.5); noiseHit(.03,.25,.1,'highpass',3500,.6); tone(140,0,.25,'sine',.2,45); }
+function applause(sec=3){
+  if(!soundOn) return; if(!ac()) return;
+  const n = Math.round(sec*55);
+  for(let i=0;i<n;i++){
+    const p = Math.random();                     // vị trí trong khoảng thời gian
+    const env = Math.sin(Math.PI*Math.min(1,p*.92+.04)); // tăng dần rồi nhỏ dần
+    const t = p*sec;
+    noiseHit(t, rand(.04,.1), .22*env*rand(.4,1), 'bandpass', rand(1000,3200), rand(.5,1.4));
+  }
+}
+
+/* =====================================================
+   PHÁT ÂM (Speech Synthesis)
+   ===================================================== */
+let voice=null;
+function pickVoice(){
+  if(!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));
+  const prefs = [/Google US English/i,/Aria|Jenny|Natural/i,/Samantha|Zira|Ava|Allison/i,/Google UK English Female/i];
+  for(const re of prefs){ const v=vs.find(x=>re.test(x.name)); if(v){voice=v;return;} }
+  voice = vs.find(v=>/en[-_]US/i.test(v.lang)) || vs[0] || null;
+}
+if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+let speakTimer=null;
+function speak(text,rate=.85,btn){
+  if(!('speechSynthesis' in window)){ toast('This browser does not support speech 😢'); return; }
+  speechSynthesis.cancel();
+  document.querySelectorAll('.playing').forEach(b=>b.classList.remove('playing'));
+  clearTimeout(speakTimer);
+  speakTimer = setTimeout(()=>{
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='en-US'; if(voice) u.voice=voice; u.rate=rate; u.pitch=1;
+    if(btn){ btn.classList.add('playing'); u.onend=u.onerror=()=>btn.classList.remove('playing'); }
+    speechSynthesis.speak(u);
+  },40);
+}
+
+/* =====================================================
+   PHÁO HOA + CHÚC MỪNG + VỖ TAY
+   ===================================================== */
+const fx=$('fx'), fctx=fx.getContext('2d');
+let FW=0, FH=0, rockets=[], parts=[], fxUntil=0, fxRunning=false, nextLaunch=0;
+function fxResize(){
+  const d=Math.min(window.devicePixelRatio||1,2);
+  FW=innerWidth; FH=innerHeight;
+  fx.width=FW*d; fx.height=FH*d; fctx.setTransform(d,0,0,d,0,0);
+}
+addEventListener('resize',fxResize); fxResize();
+function launchRocket(){
+  rockets.push({x:rand(.12,.88)*FW, y:FH+10, vy:-rand(9,13)*(FH/800+.4), ty:rand(.1,.45)*FH, hue:rnd(360), vx:rand(-1,1)});
+}
+function explode(x,y,hue){
+  sfxPop();
+  const n=rnd(40)+70, ring=Math.random()<.35;
+  for(let i=0;i<n;i++){
+    const ang=Math.PI*2*i/n + rand(-.05,.05), sp=ring?5.2:rand(1.5,6.2);
+    parts.push({x,y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,life:1,decay:rand(.008,.018),
+      hue:hue+rand(-25,25),size:rand(1.8,3.6)});
+  }
+}
+function fxLoop(t){
+  fctx.globalCompositeOperation='destination-out';
+  fctx.fillStyle='rgba(0,0,0,.2)'; fctx.fillRect(0,0,FW,FH);
+  fctx.globalCompositeOperation='lighter';
+  if(t<fxUntil && t>=nextLaunch){ launchRocket(); if(Math.random()<.5) launchRocket(); nextLaunch=t+rand(220,480); }
+  for(let i=rockets.length-1;i>=0;i--){
+    const r=rockets[i]; r.x+=r.vx; r.y+=r.vy;
+    fctx.fillStyle=`hsl(${r.hue},100%,75%)`; fctx.beginPath(); fctx.arc(r.x,r.y,3,0,7); fctx.fill();
+    if(r.y<=r.ty){ explode(r.x,r.y,r.hue); rockets.splice(i,1); }
+  }
+  for(let i=parts.length-1;i>=0;i--){
+    const p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.06; p.vx*=.985; p.vy*=.985; p.life-=p.decay;
+    if(p.life<=0){ parts.splice(i,1); continue; }
+    fctx.fillStyle=`hsla(${p.hue},100%,62%,${p.life})`;
+    fctx.beginPath(); fctx.arc(p.x,p.y,p.size*p.life+.4,0,7); fctx.fill();
+  }
+  if(t<fxUntil || rockets.length || parts.length) requestAnimationFrame(fxLoop);
+  else { fctx.clearRect(0,0,FW,FH); fxRunning=false; }
+}
+function fireworks(ms=5000){
+  fxUntil=performance.now()+ms;
+  if(!fxRunning){ fxRunning=true; nextLaunch=0; requestAnimationFrame(fxLoop); }
+}
+function floaters(emoji,count=14){
+  for(let i=0;i<count;i++){
+    const s=document.createElement('span'); s.className='floaty'; s.textContent=emoji;
+    s.style.left=rand(2,94)+'vw'; s.style.fontSize=rand(2.2,4.4)+'rem';
+    s.style.setProperty('--r',rand(-40,40)+'deg'); s.style.animationDelay=rand(0,.9)+'s';
+    document.body.appendChild(s); setTimeout(()=>s.remove(),3800);
+  }
+}
+let bannerTimer=null;
+function showBanner(title,sub){
+  const b=$('banner'); b.hidden=true; void b.offsetWidth;
+  b.innerHTML=`<div><h2>${title}</h2><p>${sub}</p></div>`; b.hidden=false;
+  clearTimeout(bannerTimer); bannerTimer=setTimeout(()=>{ b.hidden=true; },3700);
+}
+const CELE = [
+  ['🎉 CONGRATULATIONS! 🎉','You are doing great!'],
+  ['🌟 AWESOME! 🌟','Great job! Keep it up!'],
+  ['🏆 EXCELLENT! 🏆','Well done! You remember the words so well!'],
+  ['💪 FANTASTIC! 💪','You are a vocabulary superstar!']
+];
+function doClap(){ applause(3); floaters('👏',16); }
+function doCelebrate(){
+  const m=CELE[rnd(CELE.length)];
+  sfxFanfare(); setTimeout(()=>applause(3.2),500);
+  fireworks(5500); floaters('🎉',8); showBanner(m[0],m[1]);
+}
+$('clapBtn').onclick = doClap;
+$('celeBtn').onclick = doCelebrate;
+function syncMute(){ $('muteBtn').textContent = soundOn ? '🔊' : '🔇'; }
+$('muteBtn').onclick = ()=>{ soundOn=!soundOn; store.set('u11_sound',soundOn?'on':'off'); syncMute(); toast(soundOn?'Sound effects ON 🔊':'Sound effects OFF 🔇'); if(soundOn) sfxClick(); };
+syncMute();
+
+/* =====================================================
+   ĐIỀU HƯỚNG MÀN HÌNH
+   ===================================================== */
+const SCREENS=['menu','study','game','result'];
+function show(name){
+  SCREENS.forEach(s=>$(s).hidden = s!==name);
+  window.scrollTo({top:0});
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+}
+$('homeBtn').onclick = ()=>{ sfxClick(); renderMenu(); show('menu'); };
+
+function renderMenu(){
+  $('tiles').innerHTML = Object.entries(MODES).map(([k,m])=>{
+    const best = k==='study' ? '' : (store.get('u11_best_'+k) ? `<em>🏅 Best score: ${store.get('u11_best_'+k)}</em>` : '');
+    return `<button class="tile" data-mode="${k}" style="--c:${m.c}">
+      <div class="ic">${m.ic}</div><div><b>${m.name}</b><span>${m.desc}</span>${best}</div></button>`;
+  }).join('');
+}
+$('tiles').addEventListener('click',e=>{
+  const t=e.target.closest('.tile'); if(!t) return;
+  ac(); sfxClick();
+  const m=t.dataset.mode;
+  if(m==='study') startStudy(); else startGame(m);
+});
+
+/* =====================================================
+   CHẾ ĐỘ HỌC THẺ
+   ===================================================== */
+let deck=WORDS.slice(), si=0, flipped=false;
+function spkBtns(text,extra=''){
+  return `<button class="spk sm" data-say="${text}" data-rate=".85">🔊 Nghe</button>
+          <button class="spk slow sm" data-say="${text}" data-rate=".5">🐢 Slow</button>${extra}`;
+}
+function renderStudy(autoSpeak){
+  const w=deck[si];
+  flipped=false; $('flip').classList.remove('is-back');
+  const sc=$('flip').parentNode; sc.style.setProperty('--h',w.h);
+  $('faceF').style.setProperty('--h',w.h); $('faceB').style.setProperty('--h',w.h);
+  $('faceF').innerHTML = `
+    <div class="big-emoji">${w.emoji}</div>
+    <div class="word${w.en.length>14?' long':''}">${w.en}</div>
+    <div class="ipa">${w.ipa}</div>
+    <button class="spk big" data-say="${w.en}" data-rate=".8">🔊 Hear word</button>
+    <div class="hint">👆 Tap the card to see the meaning</div>`;
+  $('faceB').innerHTML = `
+    <span class="chip">${w.tag}</span>
+    <div class="vi${w.vi.length>16?' long':''}">${w.vi}</div>
+    <div class="ipa">${w.en} ${w.ipa}</div>
+    <div class="sbtns"><button class="spk sm" data-say="${w.en}" data-rate=".8">🔊 Word</button></div>
+    <div class="sent"><div class="en">${w.sEn}</div><div class="vn">${w.sVi}</div>
+      <div class="sbtns">
+        <button class="spk sm" data-say="${w.sEn}" data-rate=".85">🔊 Sentence</button>
+        <button class="spk slow sm" data-say="${w.sEn}" data-rate=".5">🐢 Slow</button>
+      </div></div>`;
+  $('stCount').textContent = (si+1)+' / '+deck.length;
+  $('stProg').style.width = ((si+1)/deck.length*100)+'%';
+  if(autoSpeak) speak(w.en,.8);
+}
+function startStudy(){ deck=WORDS.slice(); si=0; show('study'); renderStudy(true); }
+function stGo(d){
+  si=(si+d+deck.length)%deck.length; sfxClick(); renderStudy(true);
+}
+function stFlip(){
+  flipped=!flipped; $('flip').classList.toggle('is-back',flipped); sfxClick();
+  if(flipped) speak(deck[si].sEn,.85);
+}
+$('prevBtn').onclick=()=>stGo(-1);
+$('nextBtn').onclick=()=>stGo(1);
+$('flipBtn').onclick=stFlip;
+$('flip').onclick=e=>{ if(e.target.closest('button')) return; stFlip(); };
+$('shufBtn').onclick=()=>{ deck=shuffle(WORDS); si=0; toast('🔀 Cards shuffled'); renderStudy(true); };
+$('toGameBtn').onclick=()=>startGame('mix');
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-say]'); if(!b) return;
+  e.stopPropagation();
+  speak(b.dataset.say, parseFloat(b.dataset.rate||'.85'), b);
+});
+
+/* =====================================================
+   CHẾ ĐỘ GAME
+   ===================================================== */
+let G=null;
+function startGame(mode,pool){
+  const words = shuffle(pool || (mode==='fill' ? WORDS.filter(w=>w.fill) : WORDS));
+  const alt = QTYPES.filter(t=>t!=='fill');
+  G={mode, queue:words.map((w,k)=>{ let t = mode==='mix' ? QTYPES[k%QTYPES.length] : mode; if(t==='fill' && !w.fill) t = alt[k%alt.length]; return {w,type:t}; }),
+     i:0, score:0, streak:0, best:0, correct:0, wrong:[], answered:false, opts:[], practice:!!pool};
+  show('game'); renderQ();
+}
+function pickOptions(w,type){
+  // tránh đáp án gây nhầm: "Cảnh sát" (Police officer) và "Cảnh sát (thân mật)" (Cop) không xuất hiện cùng nhau
+  const others = shuffle(WORDS.filter(x=>x.id!==w.id && (type==='fill' || baseVi(x.vi)!==baseVi(w.vi))));
+  const used=new Set([baseVi(w.vi)]), picks=[];
+  for(const x of others){ const b=baseVi(x.vi); if(type==='fill' || !used.has(b)){ picks.push(x); used.add(b); } if(picks.length===3) break; }
+  for(const x of others){ if(picks.length>=3) break; if(!picks.includes(x)) picks.push(x); }
+  return shuffle([w,...picks]);
+}
+function renderQ(){
+  const q=G.queue[G.i], w=q.w; G.answered=false;
+  G.opts = pickOptions(w,q.type);
+  $('gScore').textContent=G.score;
+  $('gStreak').textContent=G.streak+' 🔥';
+  $('gNum').textContent=(G.i+1)+'/'+G.queue.length;
+  $('gProg').style.width=(G.i/G.queue.length*100)+'%';
+  $('qType').textContent=QLABEL[q.type];
+  $('fbBox').innerHTML='';
+  let main='';
+  if(q.type==='listen'){
+    main=`<button class="listen-btn" id="listenBtn" data-say="${w.en}" data-rate=".8" aria-label="Listen again">🔊</button>
+          <div class="q-tr">Tap to listen again</div>`;
+  } else if(q.type==='en2vi'){
+    main=`<div class="big-emoji">${w.emoji}</div><div class="word${w.en.length>14?' long':''}" style="color:var(--pri-d)">${w.en}</div>
+          <div class="ipa">${w.ipa}</div>
+          <button class="spk" data-say="${w.en}" data-rate=".8">🔊 Hear word</button>`;
+  } else if(q.type==='vi2en'){
+    main=`<div class="big-emoji">${w.emoji}</div><div class="q-vi${w.vi.length>16?' long':''}">${w.vi}</div>`;
+  } else {
+    const re=new RegExp(w.blank.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/ /g,'\\s+'),'i');
+    main=`<div class="q-sentence">${w.sEn.replace(re,'<span class="blank" id="blankEl">&nbsp;&nbsp;&nbsp;&nbsp;</span>')}</div>
+          <div class="q-tr">${w.sVi}</div>`;
+  }
+  $('qMain').innerHTML=main;
+  $('opts').innerHTML=G.opts.map((o,i)=>{
+    let inner;
+    if(q.type==='listen') inner=`<span class="oe">${o.emoji}</span><span>${o.vi}</span>`;
+    else if(q.type==='en2vi') inner=`<span>${o.vi}</span>`;
+    else inner=`<span>${o.en}</span>`;
+    return `<button class="opt" data-i="${i}" aria-label="Answer ${i+1}">${inner}</button>`;
+  }).join('');
+  if(q.type==='listen') setTimeout(()=>speak(w.en,.8,$('listenBtn')),250);
+}
+$('opts').addEventListener('click',e=>{
+  const b=e.target.closest('.opt'); if(!b||!G||G.answered) return;
+  answer(+b.dataset.i);
+});
+function answer(i){
+  if(!G||G.answered) return;
+  G.answered=true;
+  const q=G.queue[G.i], w=q.w, ok=G.opts[i].id===w.id;
+  const btns=[...document.querySelectorAll('.opt')];
+  btns.forEach((b,k)=>{
+    b.disabled=true;
+    if(G.opts[k].id===w.id) b.classList.add('correct');
+    else if(k===i) b.classList.add('wrong'); else b.classList.add('dim');
+  });
+  let gained=0;
+  if(ok){
+    G.streak++; G.best=Math.max(G.best,G.streak); G.correct++;
+    gained=10+(G.streak>=3?5:0); G.score+=gained;
+    sfxCorrect();
+    if([3,5,8,10,15,20].includes(G.streak)){ setTimeout(()=>{ toast('🔥 '+G.streak+' correct in a row!'); applause(1.6); floaters('⭐',6); },450); }
+  } else {
+    G.streak=0; G.wrong.push(w); sfxWrong();
+  }
+  const blank=$('blankEl'); if(blank){ blank.textContent=w.blank; blank.classList.add('filled'); }
+  $('gScore').textContent=G.score; $('gStreak').textContent=G.streak+' 🔥';
+  const last = G.i===G.queue.length-1;
+  $('fbBox').innerHTML=`
+    <div class="fb ${ok?'ok':'no'}">
+      <h3>${ok?'✅ Correct! +'+gained+' points'+(gained>10?' (streak bonus 🔥)':''):'❌ Not quite – remember this word!'}</h3>
+      <div class="fb-word"><span class="e">${w.emoji}</span>
+        <div><b>${w.en}</b> <span class="ipa">${w.ipa}</span><br><span style="font-weight:800">${w.vi}</span></div>
+        <button class="spk sm" data-say="${w.en}" data-rate=".8">🔊 Hear word</button>
+      </div>
+      <div class="fb-sent"><div class="en">${w.sEn}</div><div class="vn">${w.sVi}</div>
+        <div class="sbtns" style="justify-content:flex-start">
+          <button class="spk sm" data-say="${w.sEn}" data-rate=".85">🔊 Hear sentence</button>
+          <button class="spk slow sm" data-say="${w.sEn}" data-rate=".5">🐢 Slow</button>
+        </div></div>
+      <div class="fb-actions"><span></span>
+        <button class="btn pri" id="nextQ">${last?'See results 🏆':'Next question ➜'}</button></div>
+    </div>`;
+  $('nextQ').onclick=nextQ;
+  $('nextQ').focus({preventScroll:true});
+  $('fbBox').scrollIntoView({behavior:'smooth',block:'nearest'});
+  if(ok) setTimeout(()=>speak(w.en,.8),700);
+}
+function nextQ(){
+  sfxClick();
+  if(G.i>=G.queue.length-1) return finish();
+  G.i++; renderQ(); window.scrollTo({top:0,behavior:'smooth'});
+}
+document.addEventListener('keydown',e=>{
+  if(!$('game').hidden){
+    if(['1','2','3','4'].includes(e.key) && G && !G.answered){ answer(+e.key-1); }
+    else if(e.key==='Enter' && G && G.answered && !e.target.closest('button')){ nextQ(); }
+  } else if(!$('study').hidden){
+    if(e.key==='ArrowRight') stGo(1);
+    else if(e.key==='ArrowLeft') stGo(-1);
+    else if(e.key===' ' && !e.target.closest('button')){ e.preventDefault(); stFlip(); }
+  }
+});
+
+/* =====================================================
+   KẾT QUẢ
+   ===================================================== */
+function finish(){
+  const total=G.queue.length, ratio=G.correct/total;
+  $('gProg').style.width='100%';
+  const stars = ratio>=.9?3:ratio>=.6?2:1;
+  const key='u11_best_'+G.mode, prev=+(store.get(key)||0);
+  const isRec = !G.practice && G.score>prev;
+  if(isRec) store.set(key,String(G.score));
+  const msg = ratio===1 ? ['🏆 PERFECT!','You remembered every word – amazing!']
+            : ratio>=.9 ? ['🎉 Excellent!','Almost perfect!']
+            : ratio>=.6 ? ['👍 Good job!','Practice a little more and you will remember them all!']
+            : ['💪 Keep trying!','Review the cards and try again – you can do it!'];
+  const missed = G.wrong.length ? `
+    <div class="missed"><h3>📌 Words to review (${G.wrong.length}):</h3>
+    ${G.wrong.map(w=>`<div class="mi"><span class="e">${w.emoji}</span>
+      <div class="t">${w.en} <small>${w.ipa} · ${w.vi}</small></div>
+      <button class="spk sm" data-say="${w.en}" data-rate=".8">🔊</button></div>`).join('')}</div>` : '';
+  $('resBox').innerHTML=`
+    <div class="trophy">${ratio>=.6?'🏆':'🌱'}</div>
+    <div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <h2>${msg[0]}</h2><p>${msg[1]}</p>
+    <div class="big-score">${G.score}</div><p>points</p>
+    <p>Correct: <b>${G.correct}/${total}</b> · Longest streak: <b>${G.best}</b> 🔥</p>
+    ${isRec?'<div class="newrec">🎊 New record!</div>':''}
+    <div class="row" style="margin-top:14px">
+      <button class="btn pri" id="againBtn">🔁 Play again</button>
+      ${G.wrong.length?'<button class="btn good" id="reviewBtn">🎯 Practice missed words</button>':''}
+      <button class="btn" id="resStudy">📖 Review cards</button>
+      <button class="btn" id="resMenu">🏠 Menu</button>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="tool clap" id="rClap">👏 Clap</button>
+      <button class="tool cele" id="rCele">🎉 Congratulations</button>
+    </div>
+    ${missed}`;
+  const mode=G.mode, wrongPool=G.wrong.slice();
+  $('againBtn').onclick=()=>startGame(mode);
+  if($('reviewBtn')) $('reviewBtn').onclick=()=>startGame(mode,wrongPool);
+  $('resStudy').onclick=startStudy;
+  $('resMenu').onclick=()=>{ renderMenu(); show('menu'); };
+  $('rClap').onclick=doClap; $('rCele').onclick=doCelebrate;
+  show('result');
+  if(ratio>=.6){
+    setTimeout(()=>{
+      sfxFanfare(); setTimeout(()=>applause(3),450);
+      fireworks(ratio===1?7000:4500);
+      const m=ratio===1?['🏆 PERFECT! 🏆','Perfect score! You are the champion!']:CELE[rnd(CELE.length)];
+      showBanner(m[0],m[1]);
+    },300);
+  }
+}
+
+renderMenu();
+</script>
+</body>
+</html>

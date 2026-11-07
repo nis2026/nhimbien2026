@@ -1,0 +1,253 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yes/No Questions Game</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #FFCCBC, #B2EBF2);
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            max-width: 800px;
+            width: 90%;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #E91E63;
+            margin-bottom: 1.8rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .aux-card {
+            display: inline-block;
+            width: 120px;
+            height: 80px;
+            margin: 10px;
+            background: linear-gradient(45deg, #FFF3E0, #E0F7FA);
+            color: #333;
+            line-height: 80px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .aux-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .content {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(45deg, #FFF3E0, #E0F7FA);
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .content h2 {
+            font-size: 1.8rem;
+            color: #E91E63;
+        }
+        .content p {
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .reflexive-section {
+            margin-top: 40px;
+        }
+        .reflexive-question {
+            background: linear-gradient(45deg, #FFF3E0, #E0F7FA);
+            color: #333;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .reflexive-question:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .reflexive-answer {
+            display: none;
+            margin: 10px;
+            padding: 10px;
+            background: linear-gradient(45deg, #E0F7FA, #FFF3E0);
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .reflexive-answer p {
+            font-size: 1.3rem;
+            color: #E91E63;
+        }
+        .sound-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            background: none;
+            border: none;
+        }
+        .sound-btn:hover {
+            transform: scale(1.15);
+        }
+        button {
+            margin-top: 1.8rem;
+            padding: 0.9rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(45deg, #E91E63, #F06292);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background: linear-gradient(45deg, #F06292, #E91E63);
+            transform: scale(1.06);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Yes/No Questions Game</h1>
+        <div id="aux-cards">
+            <div class="aux-card" onclick="showContent('DoDoes')">Do/Does</div>
+            <div class="aux-card" onclick="showContent('IsAre')">Is/Are</div>
+        </div>
+        <div id="content-DoDoes" class="content">
+            <h2>Do/Does</h2>
+            <p><strong>Nghĩa:</strong> Dùng với động từ thường để hỏi về sở thích, thói quen hoặc hoạt động.</p>
+            <p><strong>Ví dụ:</strong> Do you like reading? (Bạn có thích đọc sách không?)</p>
+            <p><strong>Trả lời mẫu:</strong> Yes, I like reading books. (Có, tôi thích đọc sách.)</p>
+        </div>
+        <div id="content-IsAre" class="content">
+            <h2>Is/Are</h2>
+            <p><strong>Nghĩa:</strong> Dùng với trạng thái hoặc danh từ để hỏi về sở thích hoặc đặc điểm.</p>
+            <p><strong>Ví dụ:</strong> Is painting your hobby? (Vẽ tranh có phải là sở thích của bạn không?)</p>
+            <p><strong>Trả lời mẫu:</strong> No, painting is not my hobby. (Không, vẽ tranh không phải là sở thích của tôi.)</p>
+        </div>
+
+        <div class="reflexive-section">
+            <h2>Phần Câu Phản Xạ</h2>
+            <div class="reflexive-question" onclick="showAnswer('q1')">Bạn có thích đọc sách không?</div>
+            <div id="answer-q1" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> Do you like reading?</p>
+                <p><strong>Trả lời mẫu:</strong> Yes, I like reading books.</p>
+                <button class="sound-btn" onclick="speak('Do you like reading?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q2')">Cô ấy có thích nấu ăn không?</div>
+            <div id="answer-q2" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> Does she enjoy cooking?</p>
+                <p><strong>Trả lời mẫu:</strong> Yes, she enjoys cooking.</p>
+                <button class="sound-btn" onclick="speak('Does she enjoy cooking?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q3')">Vẽ tranh có phải là sở thích của bạn không?</div>
+            <div id="answer-q3" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> Is painting your hobby?</p>
+                <p><strong>Trả lời mẫu:</strong> No, painting is not my hobby.</p>
+                <button class="sound-btn" onclick="speak('Is painting your hobby?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q4')">Bạn có giỏi nhảy múa không?</div>
+            <div id="answer-q4" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> Are you good at dancing?</p>
+                <p><strong>Trả lời mẫu:</strong> Yes, I am good at dancing.</p>
+                <button class="sound-btn" onclick="speak('Are you good at dancing?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q5')">Bạn có đi bộ đường dài không?</div>
+            <div id="answer-q5" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> Do you go hiking?</p>
+                <p><strong>Trả lời mẫu:</strong> Yes, I go hiking on weekends.</p>
+                <button class="sound-btn" onclick="speak('Do you go hiking?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q6')">Thiền có thư giãn không?</div>
+            <div id="answer-q6" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> Is meditation relaxing?</p>
+                <p><strong>Trả lời mẫu:</strong> Yes, meditation is very relaxing.</p>
+                <button class="sound-btn" onclick="speak('Is meditation relaxing?')">🎙️</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showContent(word) {
+            // Hide all content
+            document.querySelectorAll('.content').forEach(content => {
+                content.style.display = 'none';
+            });
+            // Show selected content
+            document.getElementById(`content-${word}`).style.display = 'block';
+            // Play pronunciation
+            speak(word.replace('Does', 'Do').replace('Are', 'Is')); // Simplify pronunciation
+        }
+
+        function showAnswer(id) {
+            const answer = document.getElementById(`answer-${id}`);
+            answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>

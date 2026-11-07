@@ -1,0 +1,281 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wh- Questions Game</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #FFCCBC, #B2EBF2);
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            max-width: 800px;
+            width: 90%;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #E91E63;
+            margin-bottom: 1.8rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .wh-card {
+            display: inline-block;
+            width: 120px;
+            height: 80px;
+            margin: 10px;
+            background: linear-gradient(45deg, #FFF3E0, #E0F7FA);
+            color: #333;
+            line-height: 80px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .wh-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .content {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(45deg, #FFF3E0, #E0F7FA);
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .content h2 {
+            font-size: 1.8rem;
+            color: #E91E63;
+        }
+        .content p {
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .reflexive-section {
+            margin-top: 40px;
+        }
+        .reflexive-question {
+            background: linear-gradient(45deg, #FFF3E0, #E0F7FA);
+            color: #333;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .reflexive-question:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .reflexive-answer {
+            display: none;
+            margin: 10px;
+            padding: 10px;
+            background: linear-gradient(45deg, #E0F7FA, #FFF3E0);
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .reflexive-answer p {
+            font-size: 1.3rem;
+            color: #E91E63;
+        }
+        .sound-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            background: none;
+            border: none;
+        }
+        .sound-btn:hover {
+            transform: scale(1.15);
+        }
+        button {
+            margin-top: 1.8rem;
+            padding: 0.9rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(45deg, #E91E63, #F06292);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background: linear-gradient(45deg, #F06292, #E91E63);
+            transform: scale(1.06);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wh- Questions Game</h1>
+        <div id="wh-cards">
+            <div class="wh-card" onclick="showContent('What')">What</div>
+            <div class="wh-card" onclick="showContent('When')">When</div>
+            <div class="wh-card" onclick="showContent('Where')">Where</div>
+            <div class="wh-card" onclick="showContent('Who')">Who</div>
+            <div class="wh-card" onclick="showContent('Why')">Why</div>
+            <div class="wh-card" onclick="showContent('How')">How</div>
+        </div>
+        <div id="content-What" class="content">
+            <h2>What</h2>
+            <p><strong>Nghĩa:</strong> Hỏi về sự vật, hành động hoặc hoạt động.</p>
+            <p><strong>Ví dụ:</strong> What do you do in the morning? (Bạn làm gì vào buổi sáng?)</p>
+            <p><strong>Trả lời mẫu:</strong> I wake up and eat breakfast. (Tôi thức dậy và ăn sáng.)</p>
+        </div>
+        <div id="content-When" class="content">
+            <h2>When</h2>
+            <p><strong>Nghĩa:</strong> Hỏi về thời gian.</p>
+            <p><strong>Ví dụ:</strong> When does she eat breakfast? (Cô ấy ăn sáng khi nào?)</p>
+            <p><strong>Trả lời mẫu:</strong> She eats breakfast at 7 a.m. (Cô ấy ăn sáng lúc 7 giờ sáng.)</p>
+        </div>
+        <div id="content-Where" class="content">
+            <h2>Where</h2>
+            <p><strong>Nghĩa:</strong> Hỏi về địa điểm.</p>
+            <p><strong>Ví dụ:</strong> Where do you study? (Bạn học ở đâu?)</p>
+            <p><strong>Trả lời mẫu:</strong> I study at school. (Tôi học ở trường.)</p>
+        </div>
+        <div id="content-Who" class="content">
+            <h2>Who</h2>
+            <p><strong>Nghĩa:</strong> Hỏi về người.</p>
+            <p><strong>Ví dụ:</strong> Who do you play with? (Bạn chơi với ai?)</p>
+            <p><strong>Trả lời mẫu:</strong> I play with my friends. (Tôi chơi với bạn bè.)</p>
+        </div>
+        <div id="content-Why" class="content">
+            <h2>Why</h2>
+            <p><strong>Nghĩa:</strong> Hỏi về lý do.</p>
+            <p><strong>Ví dụ:</strong> Why do you sleep early? (Tại sao bạn ngủ sớm?)</p>
+            <p><strong>Trả lời mẫu:</strong> I sleep early to stay healthy. (Tôi ngủ sớm để giữ sức khỏe.)</p>
+        </div>
+        <div id="content-How" class="content">
+            <h2>How</h2>
+            <p><strong>Nghĩa:</strong> Hỏi về cách thức hoặc phương pháp.</p>
+            <p><strong>Ví dụ:</strong> How do you go to school? (Bạn đi học như thế nào?)</p>
+            <p><strong>Trả lời mẫu:</strong> I go to school by bike. (Tôi đi học bằng xe đạp.)</p>
+        </div>
+
+        <div class="reflexive-section">
+            <h2>Phần Câu Phản Xạ</h2>
+            <div class="reflexive-question" onclick="showAnswer('q1')">Bạn làm gì vào buổi sáng?</div>
+            <div id="answer-q1" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> What do you do in the morning?</p>
+                <p><strong>Trả lời mẫu:</strong> I wake up and eat breakfast.</p>
+                <button class="sound-btn" onclick="speak('What do you do in the morning?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q2')">Cô ấy ăn sáng khi nào?</div>
+            <div id="answer-q2" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> When does she eat breakfast?</p>
+                <p><strong>Trả lời mẫu:</strong> She eats breakfast at 7 a.m.</p>
+                <button class="sound-btn" onclick="speak('When does she eat breakfast?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q3')">Bạn học ở đâu?</div>
+            <div id="answer-q3" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> Where do you study?</p>
+                <p><strong>Trả lời mẫu:</strong> I study at school.</p>
+                <button class="sound-btn" onclick="speak('Where do you study?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q4')">Bạn chơi với ai?</div>
+            <div id="answer-q4" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> Who do you play with?</p>
+                <p><strong>Trả lời mẫu:</strong> I play with my friends.</p>
+                <button class="sound-btn" onclick="speak('Who do you play with?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q5')">Tại sao bạn ngủ sớm?</div>
+            <div id="answer-q5" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> Why do you sleep early?</p>
+                <p><strong>Trả lời mẫu:</strong> I sleep early to stay healthy.</p>
+                <button class="sound-btn" onclick="speak('Why do you sleep early?')">🎙️</button>
+            </div>
+            <div class="reflexive-question" onclick="showAnswer('q6')">Bạn đi học như thế nào?</div>
+            <div id="answer-q6" class="reflexive-answer">
+                <p><strong>Câu trả lời:</strong> How do you go to school?</p>
+                <p><strong>Trả lời mẫu:</strong> I go to school by bike.</p>
+                <button class="sound-btn" onclick="speak('How do you go to school?')">🎙️</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showContent(word) {
+            // Hide all content
+            document.querySelectorAll('.content').forEach(content => {
+                content.style.display = 'none';
+            });
+            // Show selected content
+            document.getElementById(`content-${word}`).style.display = 'block';
+            // Play pronunciation
+            speak(word);
+        }
+
+        function showAnswer(id) {
+            const answer = document.getElementById(`answer-${id}`);
+            answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>
